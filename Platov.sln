@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{DA7A21FA-8162-4350-AD77-A8D1B671F3ED}") = "Platov", "Platov\Platov.rxproj", "{2634D7FB-F900-448E-B379-DEF7998E0872}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2634D7FB-F900-448E-B379-DEF7998E0872}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2634D7FB-F900-448E-B379-DEF7998E0872}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2634D7FB-F900-448E-B379-DEF7998E0872}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2634D7FB-F900-448E-B379-DEF7998E0872}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C7A15C40-0674-4D08-AB95-8BF1DC3572D9}
+	EndGlobalSection
+EndGlobal
