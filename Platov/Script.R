@@ -33,7 +33,7 @@ sDate = Sys.Date() + 1
 u = paste( "https://rasp.yandex.ru/station/9866615?start=", Sys.Date()+1, "T00%3A00%3A00&span=24", sep = "")
 
 # Tables
-i = 1
+i = 13
 u = paste("https://rasp.yandex.ru/station/", station, "?start=", Sys.Date() + 1 + i, "T00%3A00%3A00&span=24", sep = "")
 sDate = Sys.Date() + 1 + i
 OneDay_TimeTable = function(u, sDate)
@@ -62,6 +62,8 @@ OneDay_TimeTable = function(u, sDate)
     #df$`рейс` = str_split_fixed(df$`рейс`, " — ", 2)[,2]
 
     df_div3 = html_nodes(tables, xpath = '//*[@class="b-timetable__tripname"]')
+
+    #str_split_fixed(html_text(html_nodes(df_div3, "a")), " — ", 3)[1, 1]
     df$`Направление` = str_split_fixed( html_text(html_nodes(df_div3, "a")), " — ", 3)[, 2]
 
     df_div4 = html_nodes(tables, xpath = '//*[@class="b-timetable__description"]')
@@ -75,9 +77,6 @@ OneDay_TimeTable = function(u, sDate)
     return(df)
 }
 
-station = "9600213" # Sheremetievo
-station = "9866615" # Platov
-i = 2
 
 OneWeek_TimeTable = function(station)
 {
@@ -88,7 +87,7 @@ OneWeek_TimeTable = function(station)
         cat(".",i,".")
         df_tmp = OneDay_TimeTable(
             paste("https://rasp.yandex.ru/station/",station,"?start=", Sys.Date() + 1 + i, "T00%3A00%3A00&span=24", sep = ""),
-            Sys.Date() + 1 + i)
+            Sys.Date() + 3 + i)
         df = rbind(df, df_tmp)
     }
 
@@ -100,25 +99,121 @@ OneWeek_TimeTable = function(station)
     return(df)
 }
 
-df = OneWeek_TimeTable("9866615")
+
+"9600213" # Sheremetievo
+"9866615" # Platov
+"9600365" # Borispol
+"9600177" # Gumrak
+"9600396" # Simpferopol
+station = "9600366" # Pulkovo
+
+df  = OneWeek_TimeTable("9866615")
+#dff = df[, c(1,2,4,5)]
+df$`расписание`
 
 
+# Frequncies plots ----
+Freq_plot = function(dff, p_title)
+{ 
+    return(ggplot(data = dff) +
+        geom_bar(stat = "identity", aes(reorder(Var1, Freq), Freq), fill = "cyan3") +
+        geom_text(aes(reorder(Var1, Freq), label = Freq, y = Freq), size = 3, hjust = -0.1, colour = "dimgray", vjust = 0.25) +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+        xlab("") + ylab("") + coord_flip() +
+        scale_y_continuous(breaks = seq(0, max(dff$Freq), 5)) +
+        theme(plot.margin = unit(c(0, 0.2, 0, 0), "cm")) + 
+        ggtitle( p_title )
+    )
+}
+
+df_cities = as.data.frame(sort(table(df$`Направление`), decreasing = T))
+df_airlines = as.data.frame(sort(table(df$`Авиакомпания`), decreasing = T))
+df_jets = as.data.frame(sort(table(df$`Самолёт`), decreasing = T))
+
+Freq_plot(df_cities, "Рейсов из аэропорта Платов\nпо направлениям (в неделю)")
+Freq_plot(df_airlines, "Количество рейсов из аэропорта Платов\nпо авиакомпаниям (в неделю)")
+Freq_plot(df_jets, "Количество рейсов из аэропорта Платов\nпо типам самолётов (в неделю)")
 
 
-sort( unique( df$`Самолёт` ) )
+# Frequncy by Day plot ---- 
+wdays = c( "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 
-dff = df[, c(1,2,4,5)]
+tab2 = apply(table(as.character(df$`расписание`$wday + 1), df$`Направление`), FUN = sum, MARGIN = 1)
+df_wd_fly = data.frame(Var1 = as.character(names(tab2)), Freq = tab2)
+df_wd_fly$Var1 = as.integer(df_wd_fly$Var1)
 
-dff = as.data.frame(sort(table(df$`Направление`), decreasing = T))
-dff = as.data.frame(sort(table(df$`Авиакомпания`), decreasing = T))
-dff = as.data.frame(sort(table(df$`Самолёт`), decreasing = T))
-
-
+dff = df_wd_fly
 ggplot(data = dff) +
-    geom_bar(stat = "identity", aes(reorder(Var1, Freq), Freq), fill = "steelblue") +
-    geom_text(aes(reorder(Var1, Freq), label = Freq, y = Freq), size = 3, hjust = -0.1, colour = "dimgray", vjust = 0.25) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    xlab("") + ylab("") + coord_flip() +
-    scale_y_continuous(breaks = seq(0, max(dff$Freq), 5))
+        geom_bar(stat = "identity", aes(Var1, Freq), fill = "cyan3") +
+        geom_text(aes(Var1, Freq, label = Freq, y = Freq), size = 3, colour = "dimgray", vjust = -0.3) +
+        #        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+        xlab("") + ylab("") + # coord_flip() +
+        scale_x_continuous(breaks = 1:7, labels = wdays) +
+        theme(plot.margin = unit(c(0, 0.2, 0, 0), "cm")) +
+        ggtitle("Количество рейсов из аэропорта Платов \nпо дням недели")
+
+
+
+# Capacity ----
+df_capacity = data.frame(
+    type = c("Airbus A319", "Boeing 737-800", "Сухой Суперджет 100", "Airbus A320", "Boeing 737-500", "Airbus А321", "Canadair regional jet", "Boeing 737-400", "Embraer EMB 175"),
+    capacity = c(134, 175, 95, 164, 132, 199, 76, 159, 80))
+df_capacity$type = as.character(df_capacity$type)
+df_jets$Var1 = as.character(df_jets$Var1)
+
+#within(df_jets, `Вместимость` <- factor(`Вместимость`, labels = df_capacity$capacity))
+
+#factor(df_jets$Var1)
+#factor(df_capacity$capacity)
+
+df_jets$`Вместимость` =  df_capacity[ , 2]
+#which(df_capacity$type==df_jets$Var1)
+#df_capacity[, 2]
+
+#df_jets$Var1[ df_capacity$, ]
+df_jets$`Ёмкость` = df_jets$Freq * df_jets$`Вместимость`
+
+sum(df_jets$`Ёмкость`) * 8 * 0.7
+
+
+
+
+# Mosaic plot ----
+tab = table(df$`Авиакомпания`, df$`Направление`)
+
+
+mosaic(df$`Авиакомпания` ~ df$`Направление`)
+print(tbl)
+mosaic(tbl)
+
+
+
+tab = tab[ as.character(df_airlines$Var1), as.character(df_cities$Var1)]
+df_cross = as.data.frame.matrix(tab)
+
+mosaic(tab, legend = T, zero_size = 0)
+
+mosaic(~`Направление` + `Авиакомпания`, data = df, zero_size = 0, zero_split = F, keep_aspect_ratio = F, ctx = 0.2)
+mosaic(~`Авиакомпания` + `Направление`, data = df, zero_size = 0, legend = T)
+
+# Plots
+if (!require("vcd")) { install.packages("vcd"); require("vcd") }
+mosaic(tab, legend = T)
+assoc(tab, legend = T, compress = T)
+
+
+res4
+
+
+
+library(MASS)
+data("Titanic")
+mosaic(Titanic)
+
+## Formula interface for tabulated data plus shading and legend:
+mosaic(~Sex + Age + Survived, data = Titanic,
+  main = "Survival on the Titanic", shade = TRUE, legend = TRUE)
+
+
 
 
