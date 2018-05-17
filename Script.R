@@ -14,6 +14,7 @@ if (!require("rvest")) { install.packages("rvest"); require("rvest") }
 # Parsing -----
 
 dataDir = "C:/Users/stepa/OneDrive/DataScience/Airports/ЯндексТаблоПарсер/Platov"
+plotDir = "C:/Users/stepa/OneDrive/DataScience/Airports/ЯндексТаблоПарсер/Platov/Plots"
 
 Sys.getlocale()
 LANG = "ru_RU.65001"
@@ -38,6 +39,7 @@ u = paste( "https://rasp.yandex.ru/station/9866615?start=", Sys.Date()+1, "T00%3
 i = 13
 u = paste("https://rasp.yandex.ru/station/", station, "?start=", Sys.Date() + 1 + i, "T00%3A00%3A00&span=24", sep = "")
 sDate = Sys.Date() + 1 + i
+
 OneDay_TimeTable = function(u, sDate)
 { 
     tables = read_html(u, encoding = "UTF-8")
@@ -115,12 +117,47 @@ OneWeek_TimeTable = function(station)
 station = "9600366" # Pulkovo
 
 #df = OneWeek_TimeTable("9866615")
+
+
+#library(RJSONIO)
+#nrow <- nrow(df)
+#counter <- 1
+#df$lon[counter] <- 0
+#df$lat[counter] <- 0
+#while (counter <= nrow) {
+#    CityName <- gsub(' ', '%20', df$`Направление`[counter]) #remove space for URLs
+#    CountryCode <- ""
+#    url <- paste(
+#    "http://nominatim.openstreetmap.org/search?city="
+#    , CityName
+    #    , "&countrycodes="
+    #    , CountryCode
+#    , "&limit=9&format=json"
+#    , sep = "")
+#    x <- fromJSON(url)
+#    if (is.vector(x)) {
+#        df$lon[counter] <- x[[1]]$lon
+#        df$lat[counter] <- x[[1]]$lat
+#    }
+#    counter <- counter + 1
+#}
+
+#df3 = as.data.frame(table(df$`Направление`))
+
+#for (i in c(1:nrow(df3))) {
+#    df[df$`Направление` == df3[i, 1], 11] = df3[i, 2]
+#}
+#
+
 #write.csv2(df, file.path(dataDir, "TimeTable.csv"))
 
-df = read.csv2( file.path(dataDir, "TimeTable.csv"))[,c(2:9)]
+df = read.csv2( file.path(dataDir, "TimeTable.csv"))[,c(2:12)]
 
-#dff = df[, c(1,2,4,5)]
-df$`расписание`
+df$lat = as.numeric(as.character(df$lat))
+df$lon = as.numeric(as.character(df$lon))
+df$`расписание` = as.POSIXct(df$`расписание`)
+df$`Направление` = as.character(df$`Направление`)
+colnames(df)[11] = "Частота"
 
 
 # Frequncies plots ----
@@ -131,7 +168,7 @@ Freq_plot = function(dff, p_title)
         geom_text(aes(reorder(Var1, Freq), label = Freq, y = Freq), size = 3, hjust = -0.1, colour = "dimgray", vjust = 0.25) +
         theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
         xlab("") + ylab("") + coord_flip() +
-        scale_y_continuous(breaks = seq(0, max(dff$Freq), 5)) +
+        scale_y_continuous(breaks = round(seq(0, max(dff$Freq), max(dff$Freq)/25))) +
         theme(plot.margin = unit(c(0, 0.2, 0, 0), "cm")) + 
         ggtitle( p_title )
     )
@@ -146,82 +183,77 @@ p2 = Freq_plot(df_airlines, "Количество рейсов из аэропорта Платов\nпо авиакомпа
 p3 = Freq_plot(df_jets, "Количество рейсов из аэропорта Платов\nпо типам самолётов (в неделю)")
 
 
+
+#pdf(file = paste(plotDir, "/Freq_cities.pdf", sep = ""), width = 12, height = 12, pointsize = 10)
+png(filename = file.path(plotDir, "City_vs_Freq.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+p1 + annotate(geom = "text", x = 15, y = 50.0, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5)
+dev.off()
+
+png(filename = file.path(plotDir, "Airline_vs_Freq.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+p2 + annotate(geom = "text", x = 9, y = 25.0, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial')
+dev.off()
+
+png(filename = file.path(plotDir, "Jet_vs_Freq.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+p3 + annotate(geom = "text", x = 5, y = 35, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 7, alpha = 0.5, family = 'Arial')
+dev.off()
+
+
+
 # Frequncy by Day plot ---- 
 wdays = c( "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 
-tab2 = apply(table(as.character(df$`расписание`$wday + 1), df$`Направление`), FUN = sum, MARGIN = 1)
-df_wd_fly = data.frame(Var1 = as.character(names(tab2)), Freq = tab2)
-df_wd_fly$Var1 = as.integer(df_wd_fly$Var1)
+#weekdays(df$`расписание` )
+
+tab2 = apply(table( as.integer(format(df$`расписание`, format = "%w")), df$`Направление`), FUN = sum, MARGIN = 1)
+df_wd_fly = data.frame(Var1 = as.character(names(tab2)), Freq = tab2 )
+df_wd_fly$Var1 = as.numeric( df_wd_fly$Var1 ) - 1
+df_wd_fly[ df_wd_fly$Var1 == 0, 1] = 7
+
+
 
 dff = df_wd_fly
 p4 = ggplot(data = dff) +
-        geom_bar(stat = "identity", aes(Var1, Freq), fill = "cyan3") +
+        geom_bar(stat = "identity", aes(Var1, Freq), fill = "cyan4") +
         geom_text(aes(Var1, Freq, label = Freq, y = Freq), size = 3, colour = "dimgray", vjust = -0.3) +
         #        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
         xlab("") + ylab("") + # coord_flip() +
         scale_x_continuous(breaks = 1:7, labels = wdays) +
         theme(plot.margin = unit(c(0, 0.2, 0, 0), "cm")) +
-        ggtitle("Количество рейсов из аэропорта Платов \nпо дням недели")
+        ggtitle("Количество рейсов из аэропорта Платов \nпо дням недели") +
+        annotate(geom = "text", x = 4, y = 17, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 9, alpha = 0.5, family = 'Arial')
 
 
-
-# Capacity ----
-df_capacity = data.frame(
-    type = c("Airbus A319", "Boeing 737-800", "Сухой Суперджет 100", "Airbus A320", "Boeing 737-500", "Airbus А321", "Canadair regional jet", "Boeing 737-400", "Embraer EMB 175"),
-    capacity = c(134, 175, 95, 164, 132, 199, 76, 159, 80))
-df_capacity$type = as.character(df_capacity$type)
-df_jets$Var1 = as.character(df_jets$Var1)
-
-#within(df_jets, `Вместимость` <- factor(`Вместимость`, labels = df_capacity$capacity))
-
-#factor(df_jets$Var1)
-#factor(df_capacity$capacity)
-
-df_jets$`Вместимость` =  df_capacity[ , 2]
-#which(df_capacity$type==df_jets$Var1)
-#df_capacity[, 2]
-
-#df_jets$Var1[ df_capacity$, ]
-df_jets$`Ёмкость` = df_jets$Freq * df_jets$`Вместимость`
-
-sum(df_jets$`Ёмкость`) * 8 * 0.7
+png(filename = file.path(plotDir, "Freq_per_day.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+p4
+dev.off()
 
 
 
 
+tab2 = apply(table(as.integer(format(df$`расписание`, format = "%H")), df$`Направление`), FUN = sum, MARGIN = 1)
+df_wd_fly = data.frame(Var1 = as.character(names(tab2)), Freq = tab2)
+df_wd_fly$Var1 = as.numeric(df_wd_fly$Var1)
 
-library(grid)
-
-
-watermarkGrob <- function(lab = "PROOF ONLY") {
-    grob(lab = lab, cl = "watermark")
-}
-
-## custom draw method to
-## calculate expansion factor on-the-fly
-drawDetails.watermark <- function(x, rot = 45, ...) {
-    cex <- convertUnit(unit(1, "npc"), "mm", val = TRUE) 
-    convertUnit(unit(2, "grobwidth", textGrob(x$val)), "mm", val = TRUE)
-
-    grid.text(x$lab, rot = rot, gp = gpar(cex = cex, col = "black",
-                                        fontface = "bold", alpha = 0.5))
-
-}
-
-qplot(1:10, rnorm(10)) +
-    annotation_custom(xmin = -Inf, ymin = -Inf, xmax = Inf, ymax = Inf, watermarkGrob("bla"))
-
-
-#p3 +
-    qplot(1:10, rnorm(10)) +
-    annotation_custom(xmin = -Inf, ymin = -Inf, xmax = Inf, ymax = Inf, watermarkGrob())
+#df_wd_fly[df_wd_fly$Var1 == 0, 1] = 7
 
 
 
-p4 +
-    annotate("text", x = Inf, y = -Inf,
-        label = "Степан Сушко для\nРостовский Городской Транспорт",
-        hjust = 1.1, vjust = -1.1, col = "white", cex = 4, fontface = "bold", alpha = 0.8)
+dff = df_wd_fly
+p5 = ggplot(data = dff) +
+        geom_bar(stat = "identity", aes(Var1, Freq), fill = "cyan4") +
+        geom_text(aes(Var1, Freq, label = Freq, y = Freq), size = 3, colour = "dimgray", vjust = -0.3) +
+        #        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+        xlab("") + ylab("") + # coord_flip() +
+        scale_x_continuous(breaks = df_wd_fly$Var1, labels = df_wd_fly$Var1) +
+        theme(plot.margin = unit(c(0, 0.2, 0, 0), "cm")) +
+        ggtitle("Количество рейсов из аэропорта Платов \nпо времени дня за неделю") +
+        annotate(geom = "text", x = 11, y = 13, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 7, alpha = 0.5, family = 'Arial')
+
+png(filename = file.path(plotDir, "Freq_per_hour.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+p5
+dev.off()
+
+
 
 
 
@@ -244,47 +276,195 @@ tab = tab[as.character(df_airlines$Var1), as.character(df_cities$Var1)]
 #mosaic(~`Направление` + `Авиакомпания`, data = df, zero_size = 0, zero_split = F, keep_aspect_ratio = F, ctx = 0.2)
 #mosaic(~`Авиакомпания` + `Направление`, data = df, zero_size = 0, legend = T)
 
-
-
-
-
 #
+
+png(filename = file.path(plotDir, "Mosaic_Airline_vs_City.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+
 par(mar = rep(.5, 4))
-mosaicplot( tab, las = 2, col = "cyan4", main = "")
-mosaicplot( t(tab), las = 2, col = "cyan4", main = "")
+mosaicplot(tab, las = 2, col = "cyan4", main = "")
+
+text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
+        labels = "Степан Сушко\nдля\n       Ростов-Транспорт", cex = 3, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
+
+dev.off()
 
 
 
+png(filename = file.path(plotDir, "Mosaic_City_vs_Airline.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+
+par(mar = rep(.5, 4))
+
+mosaicplot(t(tab), las = 2, col = "cyan4", main = "")
+
+text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
+        labels = "Степан Сушко\nдля\n       Ростов-Транспорт", cex = 3, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
+dev.off()
+
+
+# АК vs Самолёт
 tab2 = table(df$`Авиакомпания`, df$`Самолёт`)
 tab2 = tab2[as.character(df_airlines$Var1), as.character(df_jets$Var1)]
 
-par(mar = rep(.5, 4));
+
+
+png(filename = file.path(plotDir, "Mosaic_Airline_vs_Jet.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+
+par(mar = rep(.5, 4))
 mosaicplot(tab2, las = 2, col = "cyan4", main = "")
+
+text(   x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
+        labels = "Степан Сушко\nдля\n       Ростов-Транспорт", cex = 3, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
+
+dev.off()
+
+
+
+
+png(filename = file.path(plotDir, "Mosaic_Jet_vs_Airline.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+
+par(mar = rep(.5, 4))
+
 mosaicplot( t(tab2), las = 2, col = "cyan4", main = "")
 
+text(x = grconvertX(0.5, from = "npc"), # align to center of plot X axis
+       y = grconvertY(0.5, from = "npc"), # align to center of plot Y axis
+        labels = "Степан Сушко\nдля\n       Ростов-Транспорт", # our watermark
+        cex = 3, font = 2, # large, bold font - hard to miss
+        col = adjustcolor("steelblue", alpha.f = 0.35), # translucent (0.2 = 20%) red color
+        srt = 45) # srt = angle of text: 45 degree angle to X axis
 
-
+dev.off()
 
 
 
 
 
 # Bubble plot ----
+
+
+library(ggmap)
+main_airport = geocode("Novocherkask", override_limit = T)
+
 if (!require("RgoogleMaps")) { install.packages("RgoogleMaps"); require("RgoogleMaps") }
 
-map <- GetMap(center = c(df$lat[554], df$lon[554]), zoom = 15,
+map <- GetMap(center = c( main_airport$lat, main_airport$lon), zoom = 3,
        size = c(640, 640), destfile = file.path(tempdir(), "meuse.png"),
         maptype = "mobile", SCALE = 1);
 
-par(cex = 2)
 
 
 
-#pdf( file = paste(plotDir, "/bus routes heat.pdf", sep = ""), width = 7, height = 7, pointsize = 12)
-png(filename = file.path(plotDir, "Bus routes heat.png"), width = 640, height = 640, units = "px", pointsize = 16, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+df2 = unique(df[, c(9:11)])
+df2 = rbind(df2, c(main_airport$lon, main_airport$lat, sum(df2$Freq)))
+df2 = df2[df2$lon!=0,] 
 
-df3 = df[df$n_bus > 0,]
-bubbleMap(df3, coords = c("lon", "lat"), map,
-      zcol = 'n_bus', key.entries = 1 + 2 ^ (0:4), colPalette = colorRampPalette(c("steelblue", "tomato"))(length(1 + 2 ^ (0:4))), do.sqrt = T, alpha = 0.5, verbose = 0.5)
+
+
+png(filename = file.path(plotDir, "Bubble_plot_Cities.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+
+par(mar = rep(.5, 4))
+par(cex = 3)
+
+bubbleMap(
+      df2, coords = c("lon", "lat"), map, zcol = "Freq",
+      key.entries = c(2, 5, 8 , 25, 150, 250),
+      colPalette = colorRampPalette(c("cyan4", "tomato"))( 6 ),
+      do.sqrt = T, alpha = 1.0, verbose = 0.95, legendLoc = "")
+
+text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
+        labels = "Степан Сушко\nдля\n       Ростов-Транспорт", cex = 2, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
 
 dev.off()
+
+
+
+
+
+
+
+
+# Capacity ----
+df_capacity = data.frame(
+    type = c("Airbus A319", "Boeing 737-800", "Airbus A320", "Сухой Суперджет 100", "Boeing 737-500", "Airbus А321", "Canadair regional jet", "Boeing 737-400", "Embraer EMB 175", "Canadair regional jet"),
+    capacity = c(134, 175, 164, 95, 132, 199, 76, 159, 80, 76))
+df_capacity$type = as.character(df_capacity$type)
+df_jets$Var1     = as.character(df_jets$Var1)
+
+df_jets$`Вместимость` = df_capacity[, 2]
+df_jets$`Ёмкость`     = df_jets$Freq * df_jets$`Вместимость`
+
+
+df_tmp = df_jets[, c(1, 4)]
+colnames(df_tmp) = c("Var1", "Freq")
+
+p6 = Freq_plot(df_tmp, "Ёмкость рейсов из аэропорта Платов\nпо типам самолётов (в неделю)") + annotate(geom = "text", x = 5, y = 5000, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial') + ylab(paste("Общая ёмкость по типам (в одном направлении):", sum(df_jets$`Ёмкость`) * 4))
+
+
+png(filename = file.path(plotDir, "Jet_vs_Capacity.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+p6
+dev.off()
+
+# Пассажиропоток
+sum(df_jets$`Ёмкость`) * 8 * 0.7
+
+
+
+
+# Ёмкость по направленимям
+for (i in c(1:dim(df_jets)[1])) {
+    df[df$`Самолёт` == df_capacity$type[i], 12] = df_capacity$capacity[i]
+}
+
+tab3 = table(df$`Направление`, df$V12) 
+
+for (i in c(1:dim(tab3)[1])) {
+    tab3[i,] = tab3[i,] * as.integer(colnames(tab3))
+}
+
+df_city_capacity = as.data.frame(sort(apply(tab3, MARGIN = 1, sum), decreasing = T))
+df_city_capacity = cbind(rownames(df_city_capacity), df_city_capacity)
+df_city_capacity[,1] = as.character( df_city_capacity[,1])
+colnames( df_city_capacity ) = c("Var1", "Freq")
+
+sum( df_city_capacity$Freq )
+
+p7 = Freq_plot(df_city_capacity, "Ёмкость из аэропорта Платов\nпо направлениям (в неделю)") +
+    annotate(geom = "text", x = 15, y = 9000, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial')
+
+png(filename = file.path(plotDir, "City_vs_Capacity.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+p7
+dev.off()
+
+
+
+
+
+# По АК
+
+#for (i in c(1:dim(df_jets)[1])) {
+#    df[df$`Самолёт` == df_capacity$type[i], 12] = df_capacity$capacity[i]
+#}
+
+tab3 = table(df$`Авиакомпания`, df$V12)
+
+for (i in c(1:dim(tab3)[1])) {
+    tab3[i,] = tab3[i,] * as.integer(colnames(tab3))
+}
+
+df_airline_capacity = as.data.frame(sort(apply(tab3, MARGIN = 1, sum), decreasing = T))
+df_airline_capacity = cbind(rownames(df_airline_capacity), df_airline_capacity)
+df_airline_capacity[, 1] = as.character(df_airline_capacity[, 1])
+colnames(df_airline_capacity) = c("Var1", "Freq")
+
+sum(df_airline_capacity$Freq)
+
+p8 = Freq_plot(df_airline_capacity, "Ёмкость из аэропорта Платов\nпо авиакомпаниям (в неделю)") +
+    annotate(geom = "text", x = 9, y = 3000, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial')
+
+png(filename = file.path(plotDir, "Airline_vs_Capacity.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+p8
+dev.off()
+
+
+
+
