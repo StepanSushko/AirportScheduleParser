@@ -185,17 +185,20 @@ p3 = Freq_plot(df_jets, "Количество рейсов из аэропорта Платов\nпо типам самолёт
 
 
 #pdf(file = paste(plotDir, "/Freq_cities.pdf", sep = ""), width = 12, height = 12, pointsize = 10)
-png(filename = file.path(plotDir, "City_vs_Freq.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "City_vs_Freq.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 p1 + annotate(geom = "text", x = 15, y = 50.0, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5)
 dev.off()
 
-png(filename = file.path(plotDir, "Airline_vs_Freq.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Airline_vs_Freq.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 p2 + annotate(geom = "text", x = 9, y = 25.0, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial')
 dev.off()
 
-png(filename = file.path(plotDir, "Jet_vs_Freq.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Jet_vs_Freq.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 p3 + annotate(geom = "text", x = 5, y = 35, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 7, alpha = 0.5, family = 'Arial')
 dev.off()
+
+
+
 
 
 
@@ -223,7 +226,7 @@ p4 = ggplot(data = dff) +
         annotate(geom = "text", x = 4, y = 17, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 9, alpha = 0.5, family = 'Arial')
 
 
-png(filename = file.path(plotDir, "Freq_per_day.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Freq_per_day.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 p4
 dev.off()
 
@@ -249,7 +252,7 @@ p5 = ggplot(data = dff) +
         ggtitle("Количество рейсов из аэропорта Платов \nпо времени дня за неделю") +
         annotate(geom = "text", x = 11, y = 13, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 7, alpha = 0.5, family = 'Arial')
 
-png(filename = file.path(plotDir, "Freq_per_hour.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Freq_per_hour.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 p5
 dev.off()
 
@@ -278,7 +281,7 @@ tab = tab[as.character(df_airlines$Var1), as.character(df_cities$Var1)]
 
 #
 
-png(filename = file.path(plotDir, "Mosaic_Airline_vs_City.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Mosaic_Airline_vs_City.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 
 par(mar = rep(.5, 4))
 mosaicplot(tab, las = 2, col = "cyan4", main = "")
@@ -290,7 +293,7 @@ dev.off()
 
 
 
-png(filename = file.path(plotDir, "Mosaic_City_vs_Airline.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Mosaic_City_vs_Airline.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 
 par(mar = rep(.5, 4))
 
@@ -307,7 +310,7 @@ tab2 = tab2[as.character(df_airlines$Var1), as.character(df_jets$Var1)]
 
 
 
-png(filename = file.path(plotDir, "Mosaic_Airline_vs_Jet.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Mosaic_Airline_vs_Jet.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 
 par(mar = rep(.5, 4))
 mosaicplot(tab2, las = 2, col = "cyan4", main = "")
@@ -320,7 +323,7 @@ dev.off()
 
 
 
-png(filename = file.path(plotDir, "Mosaic_Jet_vs_Airline.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Mosaic_Jet_vs_Airline.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 
 par(mar = rep(.5, 4))
 
@@ -348,7 +351,7 @@ main_airport = geocode("Novocherkask", override_limit = T)
 if (!require("RgoogleMaps")) { install.packages("RgoogleMaps"); require("RgoogleMaps") }
 
 map <- GetMap(center = c( main_airport$lat, main_airport$lon), zoom = 3,
-       size = c(640, 640), destfile = file.path(tempdir(), "meuse.png"),
+       size = c(800, 800), destfile = file.path(tempdir(), "meuse.png"),
         maptype = "mobile", SCALE = 1);
 
 
@@ -360,7 +363,7 @@ df2 = df2[df2$lon!=0,]
 
 
 
-png(filename = file.path(plotDir, "Bubble_plot_Cities.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Bubble_plot_Cities.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 
 par(mar = rep(.5, 4))
 par(cex = 3)
@@ -400,7 +403,7 @@ colnames(df_tmp) = c("Var1", "Freq")
 p6 = Freq_plot(df_tmp, "Ёмкость рейсов из аэропорта Платов\nпо типам самолётов (в неделю)") + annotate(geom = "text", x = 5, y = 5000, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial') + ylab(paste("Общая ёмкость по типам (в одном направлении):", sum(df_jets$`Ёмкость`) * 4))
 
 
-png(filename = file.path(plotDir, "Jet_vs_Capacity.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Jet_vs_Capacity.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 p6
 dev.off()
 
@@ -431,7 +434,7 @@ sum( df_city_capacity$Freq )
 p7 = Freq_plot(df_city_capacity, "Ёмкость из аэропорта Платов\nпо направлениям (в неделю)") +
     annotate(geom = "text", x = 15, y = 9000, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial')
 
-png(filename = file.path(plotDir, "City_vs_Capacity.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "City_vs_Capacity.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 p7
 dev.off()
 
@@ -461,7 +464,7 @@ sum(df_airline_capacity$Freq)
 p8 = Freq_plot(df_airline_capacity, "Ёмкость из аэропорта Платов\nпо авиакомпаниям (в неделю)") +
     annotate(geom = "text", x = 9, y = 3000, xend = Inf, yend = Inf, label = 'Степан Сушко\n     Ростов-Транспорт', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial')
 
-png(filename = file.path(plotDir, "Airline_vs_Capacity.png"), width = 640, height = 640, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+png(filename = file.path(plotDir, "Airline_vs_Capacity.png"), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 p8
 dev.off()
 
