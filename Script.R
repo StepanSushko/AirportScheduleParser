@@ -91,7 +91,7 @@ OneWeek_TimeTable = function(station)
         cat(".",i,".")
         df_tmp = OneDay_TimeTable(
             paste("https://rasp.yandex.ru/station/",station,"?start=", Sys.Date() + 1 + i, "T00%3A00%3A00&span=24", sep = ""),
-            Sys.Date() + 3 + i)
+            Sys.Date() + 1 + i)
         df = rbind(df, df_tmp)
     }
 
@@ -115,7 +115,7 @@ OneWeek_TimeTable = function(station)
 "9600396" # Simpferopol
 station = "9600366" # Pulkovo
 
-#df = OneWeek_TimeTable("9600396")
+#df = OneWeek_TimeTable("9866615")
 
 
 #library(RJSONIO)
@@ -148,9 +148,9 @@ station = "9600366" # Pulkovo
 #}
 #
 
-#write.csv2(df, file.path(dataDir, "TimeTable.csv"))
+#write.csv2(df, file.path(dataDir, paste("TimeTable_",as.Date(Sys.Date()),".csv",sep="")))
 
-df = read.csv2( file.path(dataDir, "TimeTable_Simferopol.csv"))[,c(2:12)]
+df = read.csv2( file.path(dataDir, "TimeTable_2018-05-25.csv"))[,c(2:12)]
 
 df$lat = as.numeric(as.character(df$lat))
 df$lon = as.numeric(as.character(df$lon))
@@ -158,7 +158,7 @@ df$`расписание` = as.POSIXct(df$`расписание`)
 df$`Направление` = as.character(df$`Направление`)
 colnames(df)[11] = "Частота"
 
-airport = "Симферополь"
+airport = "Платов"
 
 # Frequncies plots ----
 Freq_plot = function(dff, p_title)
@@ -389,17 +389,27 @@ dev.off()
 # Capacity ----
 # http://www.wsdot.wa.gov/Aviation/planning/EconomicCalc/Documents/AirplaneCapacityTable
 df_capacity = data.frame(
-    type = c("Airbus A319", "Boeing 737-800", "Airbus A320", "Сухой Суперджет 100", "Boeing 737-500", "Airbus А321", "Canadair regional jet", "Boeing 737-400", "Embraer EMB 175", "Canadair regional jet",
-        "Boeing 777-300", "Boeing 747-400", "ТУ-204", "Boeing 777-300ER", "Bombardier CRJ200", "Embraer 190"),
-    capacity = c(134, 175, 164, 95, 132, 199, 76, 159, 80, 76,
-    400, 470, 210, 400, 50, 105))
+    type = c(
+        "Airbus A319", "Airbus A320", "Airbus А321", 
+        "Boeing 737-100","Boeing 737-200", "Boeing 737-300", "Boeing 737-400", "Boeing 737-500", "Boeing 737-600","Boeing 737-700","Boeing 737-800", "Boeing 737-900","Boeing 737-900ER", 
+        "Boeing 777-200", "Boeing 777-200ER", "Boeing 777-200LR", "Boeing 777-300", "Boeing 777-300ER", "Boeing 777-8X", "Boeing 777-9X", "Boeing 747-400",
+        "Canadair regional jet", "Bombardier CRJ200", 
+        "Embraer EMB 175", "Embraer 190",
+        "Сухой Суперджет 100", "ТУ-204" ),
+    capacity = c(
+        134, 164, 199,
+        103, 133, 149, 168, 132, 130, 148, 189, 189, 215,
+        300, 300, 300, 365, 365, 365, 415, 416,
+        76, 50,
+        80, 105,
+        95, 210))
 df_capacity$type = as.character(df_capacity$type)
 df_jets$Var1 = as.character(df_jets$Var1)
 
 cap = NULL
 for (i in c(1:dim(df_jets)[1])) {
     if ( df_jets[i, 1] %in% df_capacity[, 1]) {
-        cap = c(cap, df_capacity[df_jets[i, 1] == df_capacity[, 1], 2])
+        cap = c(cap, df_capacity[df_capacity[, 1] == df_jets[i, 1], 2])
     } else cap = c(cap, 0)
 }
 
