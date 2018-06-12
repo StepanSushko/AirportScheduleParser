@@ -26,7 +26,160 @@ airport_en = "Platov"
 dataDir = "C:/Users/stepa/OneDrive/DataScience/Airports/ЯндексТаблоПарсер/Platov"
 plotDir = "C:/Users/stepa/OneDrive/DataScience/Airports"
 
-# Parsing -----
+ddd = c(983245, 1230601, 1501318)
+diff(ddd)[2] / diff(ddd)[1]
+
+
+# Parsing Off.Site ----
+u = "http://rov.aero/raspisanie_reysov"
+u = file.path(paste(dataDir, "/Data/", "/Platov_12.06.html", sep = ""))
+u = "C:/Users/stepa/OneDrive/DataScience/Airports/Platov_12.06.html"
+#if (!require("XML")) install.packages("XML")
+
+if (!require("RCurl")) { install.packages("RCurl"); require("RCurl") }
+
+year = "2018"
+
+AllDayRepeats = function(from1, to1, i) {
+    df_dates = seq(from1, to1, by = "days")
+    df_dates_2 = as.integer(format(seq(from1, to1, by = "days"), "%w"))
+    df_dates_2[df_dates_2 == 0] = 7
+    return(df_dates[df_dates_2 == i])
+}
+
+
+tables = read_html(u, options = c("HUGE"))
+
+city = as.character(html_nodes(tables, "caption"))
+city = gsub("<caption>", "", city)
+city = gsub("</caption>", "", city)
+
+j = 5 # 49
+li = html_table(tables, fill = T)
+
+
+df_tmp = data.frame(Рейс = flight[i], Самолёт = jet[i], Направление = city[j], Расписание = "2000-01-01 00:00:00", stringsAsFactors = F)
+df_tmp[[4]] = as.POSIXlt(df_tmp[, 4], tz = "MSK")
+
+j=49
+for (j in c(2:49)) {
+#length(html_table(tables, fill = T)))) {
+    df2 = html_table(tables, fill = T)[[j]]
+
+    tables2 = html_nodes(tables, "table")
+    flight = as.character(html_nodes(tables2[j], "font"))
+    flight = gsub("<font class=\"daflight\">","",flight)
+    flight = gsub("</font>", "", flight)
+
+    jet = NULL
+    for (k in c(1:dim(df2)[1])) {
+        jet = c(jet,gsub(pattern = flight[k], replacement = "", df2[k, 1]))
+    }
+
+
+    data.frame(
+        Рейс = df2[, 1],
+        Расписание = substr(df2[, 3], 1, 5)
+        )
+
+    tmp = gsub("период","", df2[,5])
+    from = substr(tmp, 1, 5)
+    to = substr(tmp, 7, 11)
+    from1 = as.POSIXlt(paste(from, ".", year, sep = ""), format = "%d.%m.%Y")
+    to1 = as.POSIXlt(paste(to, ".", year, sep = ""), format = "%d.%m.%Y")
+
+
+    #AllDayRepeats( from1[1], to1[1], 4)
+
+    #as.POSIXlt(paste(AllDayRepeats(from1[1], to1[1], 4), " ", substr(df2[1, 3], 1, 5), ":00", sep = ""), tz = "MSK")
+
+    #Sys.timezone(location = TRUE)
+
+
+    #i = 3
+
+    for (i in c(1:dim(df2)[1])) {
+        if (length(grep("пн", gsub("дни прибытия рейсов", "", df2[i, 6]))) > 0) {
+            if (length(AllDayRepeats(from1[i], to1[i], 1)) > 0) {
+                df_tmp = rbind(df_tmp, data.frame(
+                    Рейс = flight[i],
+                    Самолёт = jet[i],
+                    Направление = city[j-1],
+                    Расписание = as.POSIXlt(paste(AllDayRepeats(from1[i], to1[i], 1), " ", substr(df2[i, 3], 1, 5), ":00", sep = ""), tz = "MSK"), stringsAsFactors = F))
+            }
+        }
+        if (length(grep("вт", gsub("дни прибытия рейсов", "", df2[i, 6]))) > 0) {
+            if (length(AllDayRepeats(from1[i], to1[i], 2)) > 0) {
+                df_tmp = rbind(df_tmp, data.frame(
+                    Рейс = flight[i],
+                    Самолёт = jet[i],
+                    Направление = city[j-1],
+                    Расписание = as.POSIXlt(paste(AllDayRepeats(from1[i], to1[i], 2), " ", substr(df2[i, 3], 1, 5), ":00", sep = ""), tz = "MSK"), stringsAsFactors = F))
+            }
+        }
+        if (length(grep("ср", gsub("дни прибытия рейсов", "", df2[i, 6]))) > 0) {
+            if (length(AllDayRepeats(from1[i], to1[i], 3)) > 0) {
+                df_tmp = rbind(df_tmp, data.frame(
+                    Рейс = flight[i],
+                    Самолёт = jet[i],
+                    Направление = city[j-1],
+                    Расписание = as.POSIXlt(paste(AllDayRepeats(from1[i], to1[i], 3), " ", substr(df2[i, 3], 1, 5), ":00", sep = ""), tz = "MSK"), stringsAsFactors = F))
+            }
+        }
+        if (length(grep("чт", gsub("дни прибытия рейсов", "", df2[i, 6]))) > 0) {
+            if (length(AllDayRepeats(from1[i], to1[i], 4)) > 0) {
+                df_tmp = rbind(df_tmp, data.frame(
+                    Рейс = flight[i],
+                    Самолёт = jet[i],
+                    Направление = city[j-1],
+                    Расписание = as.POSIXlt(paste(AllDayRepeats(from1[i], to1[i], 4), " ", substr(df2[i, 3], 1, 5), ":00", sep = ""), tz = "MSK"), stringsAsFactors = F))
+            }
+        }
+        if (length(grep("пт", gsub("дни прибытия рейсов", "", df2[i, 6]))) > 0) {
+            if (length(AllDayRepeats(from1[i], to1[i], 5)) > 0) {
+                df_tmp = rbind(df_tmp, data.frame(
+                    Рейс = flight[i],
+                    Самолёт = jet[i],
+                    Направление = city[j-1],
+                    Расписание = as.POSIXlt(paste(AllDayRepeats(from1[i], to1[i], 5), " ", substr(df2[i, 3], 1, 5), ":00", sep = ""), tz = "MSK"), stringsAsFactors = F))
+            }
+        }
+        if (length(grep("сб", gsub("дни прибытия рейсов", "", df2[i, 6]))) > 0) {
+            if (length(AllDayRepeats(from1[i], to1[i], 6)) > 0) {
+                df_tmp = rbind(df_tmp, data.frame(
+                    Рейс = flight[i],
+                    Самолёт = jet[i],
+                    Направление = city[j-1],
+                    Расписание = as.POSIXlt(paste(AllDayRepeats(from1[i], to1[i], 6), " ", substr(df2[i, 3], 1, 5), ":00", sep = ""), tz = "MSK"), stringsAsFactors = F))
+            }
+        }
+        if (length(grep("вс", gsub("дни прибытия рейсов", "", df2[i, 6]))) > 0) {
+            if (length(AllDayRepeats(from1[i], to1[i], 7)) > 0) {
+                df_tmp = rbind(df_tmp, data.frame(
+                    Рейс = flight[i],
+                    Самолёт = jet[i],
+                    Направление = city[j-1],
+                    Расписание = as.POSIXlt(paste(AllDayRepeats(from1[i], to1[i], 7), " ", substr(df2[i, 3], 1, 5), ":00", sep = ""), tz = "MSK"), stringsAsFactors = F))
+            }
+        }
+    }
+
+    #sort( df_tmp[-c(1),], Расписание )
+
+    #gsub("дни прибытия рейсов", "", df2[, 6])
+
+}
+df_tmp = df_tmp[-c(1),]
+
+
+df3 = cbind(df_tmp[, 1], df_tmp[, 4], data.frame(Ожидается = rep(NA, dim(df_tmp)[1]), Статус = rep(NA, dim(df_tmp)[1]), Авиакомпания = rep(NA, dim(df_tmp)[1])), df_tmp[, 1], df_tmp[, 3], df_tmp[, 2])
+colnames(df3) = c("рейс", "расписание", "ожидаемое время", "статус", "Авиакомпания", "Номер рейса", "Направление", "Самолёт")
+
+df = df3[(df3$`расписание` >= as.POSIXct("2018-06-12 00:00:00")) & (df3$`расписание` <= as.POSIXct("2018-06-18 00:00:00))")),]
+write.csv2(df, file.path(dataDir, paste("TimeTable_", airport, "_", as.Date(Sys.Date())," site", ".csv", sep = "")))
+
+
+# Parsing Yandex -----
 
 #Sys.getlocale()
 #LANG = "ru_RU.65001"
@@ -36,7 +189,6 @@ plotDir = "C:/Users/stepa/OneDrive/DataScience/Airports"
 #Sys.setlocale("LC_ALL", "Russian_Russia.1251")
 
 # u = "http://en.wikipedia.org/wiki/World_population"
-#u = "http://rov.aero/raspisanie_reysov"
 #u = "https://rasp.yandex.ru/station/9866615?start=2018-05-05T00%3A00%3A00&span=24"
 #u = "https://raspisanie.msk.ru/plane/s9866615"
 #u = "https://ru.wikipedia.org/wiki/Список_наиболее_загруженных_аэропортов_России"
