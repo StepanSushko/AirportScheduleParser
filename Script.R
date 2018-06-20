@@ -23,6 +23,8 @@ station = "9866615"
 airport = "Платов"
 airport_en = "Platov"
 
+PlotsOutput = F
+
 dataDir = "C:/Users/stepa/OneDrive/DataScience/Airports/ЯндексТаблоПарсер/Platov"
 plotDir = "C:/Users/stepa/OneDrive/DataScience/Airports"
 
@@ -422,20 +424,20 @@ p3 = Freq_plot(df_jets, paste("Количество рейсов из аэропорта ", airport, "\nпо 
 p3
 
 
+if (PlotsOutput) {
+    #pdf(file = file.path(paste(plotDir, "/City_vs_Freq ", sDate, " ", airport, ".pdf", sep = "")), width = 12, height = 12, pointsize = 10)
+    png(filename = file.path(paste(plotDir, "/City_vs_Freq ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "Times", restoreConsole = TRUE, type = c("cairo-png"))
+    p1 + annotate(geom = "text", x = 15, y = 80.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5)
+    dev.off()
 
-#pdf(file = file.path(paste(plotDir, "/City_vs_Freq ", sDate, " ", airport, ".pdf", sep = "")), width = 12, height = 12, pointsize = 10)
-png(filename = file.path(paste(plotDir, "/City_vs_Freq ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "Times", restoreConsole = TRUE, type = c("cairo-png"))
-p1 + annotate(geom = "text", x = 15, y = 80.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5)
-dev.off()
+    png(filename = file.path(plotDir, paste("Airline_vs_Freq ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+        p2 + annotate(geom = "text", x = 7, y = 25.0, xend = Inf, yend = Inf, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial')
+    dev.off()
 
-png(filename = file.path(plotDir, paste("Airline_vs_Freq ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-    p2 + annotate(geom = "text", x = 7, y = 25.0, xend = Inf, yend = Inf, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial')
-dev.off()
-
-png(filename = file.path(plotDir, paste("Jet_vs_Freq ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-    p3 + annotate(geom = "text", x = 7, y = 35, xend = Inf, yend = Inf, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 7, alpha = 0.5, family = 'Arial')
-dev.off()
-
+    png(filename = file.path(plotDir, paste("Jet_vs_Freq ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+        p3 + annotate(geom = "text", x = 7, y = 35, xend = Inf, yend = Inf, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 7, alpha = 0.5, family = 'Arial')
+    dev.off()
+}
 
 
 
@@ -465,9 +467,7 @@ p4 = ggplot(data = dff) +
         annotate(geom = "text", x = 4, y = 17, xend = Inf, yend = Inf, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 9, alpha = 0.5, family = 'Arial')
 p4
 
-png(filename = file.path(plotDir, paste("Freq_per_day ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 400, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-p4
-dev.off()
+
 
 
 
@@ -492,10 +492,15 @@ p5 = ggplot(data = dff) +
         annotate(geom = "text", x = 11, y = 13, xend = Inf, yend = Inf, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 7, alpha = 0.5, family = 'Arial')
 p5
 
-png(filename = file.path(plotDir, paste("Freq_per_hour ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-p5
-dev.off()
+if (PlotsOutput) {
+    png(filename = file.path(plotDir, paste("Freq_per_day ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 400, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+    p4
+    dev.off()
 
+    png(filename = file.path(plotDir, paste("Freq_per_hour ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+    p5
+    dev.off()
+}
 
 
 
@@ -520,64 +525,65 @@ tab = tab[as.character(df_airlines$Var1), as.character(df_cities$Var1)]
 #mosaic(~`Авиакомпания` + `Направление`, data = df, zero_size = 0, legend = T)
 
 #
+mosaicplot(tab, las = 2, col = "cyan4", main = "")
+mosaicplot(t(tab), las = 2, col = "cyan4", main = "")
 
-png(filename = file.path(plotDir, paste("Mosaic_Airline_vs_City ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+if (PlotsOutput) {
+    png(filename = file.path(plotDir, paste("Mosaic_Airline_vs_City ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png")) 
 
-par(mar = rep(.5, 4))
-mosaicplot(tab, las = 2, col = "cyan4", main = "", cex = 1.1)
+    par(mar = rep(.5, 4))
 
-text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
+    mosaicplot(tab, las = 2, col = "cyan4", main = "", cex = 1.1)
+    text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
         labels = "Степан Сушко", cex = 3, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
+    dev.off()
 
-dev.off()
+    png(filename = file.path(plotDir, paste("Mosaic_City_vs_Airline ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 
+    par(mar = rep(.5, 4))
 
-
-png(filename = file.path(plotDir, paste("Mosaic_City_vs_Airline ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-
-par(mar = rep(.5, 4))
-
-mosaicplot(t(tab), las = 2, col = "cyan4", main = "", cex = 1.1)
-
-text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
-        labels = "Степан Сушко", cex = 3, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
-dev.off()
-
+    mosaicplot(t(tab), las = 2, col = "cyan4", main = "", cex = 1.1)
+    text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
+            labels = "Степан Сушко", cex = 3, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
+    dev.off()
+}
 
 # АК vs Самолёт
 tab2 = table(df$`Авиакомпания`, df$`Самолёт`)
 tab2 = tab2[as.character(df_airlines$Var1), as.character(df_jets$Var1)]
 
+mosaicplot(tab2, las = 2, col = "cyan4", main = "")
+mosaicplot(t(tab2), las = 2, col = "cyan4", main = "")
+
+if (PlotsOutput) {
+    png(filename = file.path(plotDir, paste("Mosaic_Airline_vs_Jet ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+
+    par(mar = rep(.5, 4))
+    mosaicplot(tab2, las = 2, col = "cyan4", main = "", cex = 1.1)
+
+    text(   x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
+            labels = "Степан Сушко", cex = 3, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
+
+    dev.off()
 
 
-png(filename = file.path(plotDir, paste("Mosaic_Airline_vs_Jet ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-
-par(mar = rep(.5, 4))
-mosaicplot(tab2, las = 2, col = "cyan4", main = "", cex = 1.1)
-
-text(   x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
-        labels = "Степан Сушко", cex = 3, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
-
-dev.off()
 
 
+    png(filename = file.path(plotDir, paste("Mosaic_Jet_vs_Airline ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 
+    par(mar = rep(.5, 4))
 
-png(filename = file.path(plotDir, paste("Mosaic_Jet_vs_Airline ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+    mosaicplot( t(tab2), las = 2, col = "cyan4", main = "", cex = 1.1)
 
-par(mar = rep(.5, 4))
+    text(x = grconvertX(0.5, from = "npc"), # align to center of plot X axis
+           y = grconvertY(0.5, from = "npc"), # align to center of plot Y axis
+            labels = "Степан Сушко", # our watermark
+            cex = 3, font = 2, # large, bold font - hard to miss
+            col = adjustcolor("steelblue", alpha.f = 0.35), # translucent (0.2 = 20%) red color
+            srt = 45) # srt = angle of text: 45 degree angle to X axis
 
-mosaicplot( t(tab2), las = 2, col = "cyan4", main = "", cex = 1.1)
-
-text(x = grconvertX(0.5, from = "npc"), # align to center of plot X axis
-       y = grconvertY(0.5, from = "npc"), # align to center of plot Y axis
-        labels = "Степан Сушко", # our watermark
-        cex = 3, font = 2, # large, bold font - hard to miss
-        col = adjustcolor("steelblue", alpha.f = 0.35), # translucent (0.2 = 20%) red color
-        srt = 45) # srt = angle of text: 45 degree angle to X axis
-
-dev.off()
-
+    dev.off()
+}
 
 
 
@@ -585,36 +591,40 @@ dev.off()
 tab3 = table(df$`Направление`, df$`Самолёт`)
 tab3 = tab3[as.character(df_cities$Var1), as.character(df_jets$Var1)]
 
-
-
-png(filename = file.path(plotDir, paste("Mosaic_Airline_vs_Jet ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-
-par(mar = rep(.5, 4))
 mosaicplot(tab3, las = 2, col = "cyan4", main = "")
-, cex = 1.1)
+mosaicplot(t(tab3), las = 2, col = "cyan4", main = "")
 
-text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
-        labels = "Степан Сушко", cex = 3, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
+if (PlotsOutput) {
+    png(filename = file.path(plotDir, paste("Mosaic_Airline_vs_Jet ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 
-dev.off()
+    par(mar = rep(.5, 4))
+    mosaicplot(tab3, las = 2, col = "cyan4", main = "")
+
+    text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
+            labels = "Степан Сушко", cex = 3, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
+
+    dev.off()
 
 
 
 
-png(filename = file.path(plotDir, paste("Mosaic_Jet_vs_Airline ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+    png(filename = file.path(plotDir, paste("Mosaic_Jet_vs_Airline ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 
-par(mar = rep(.5, 4))
+    par(mar = rep(.5, 4))
 
-mosaicplot(t(tab3), las = 2, col = "cyan4", main = "", cex = 1.1)
+    mosaicplot(t(tab3), las = 2, col = "cyan4", main = "", cex = 1.1)
 
-text(x = grconvertX(0.5, from = "npc"), # align to center of plot X axis
-       y = grconvertY(0.5, from = "npc"), # align to center of plot Y axis
-        labels = "Степан Сушко", # our watermark
-        cex = 3, font = 2, # large, bold font - hard to miss
-        col = adjustcolor("steelblue", alpha.f = 0.35), # translucent (0.2 = 20%) red color
-        srt = 45) # srt = angle of text: 45 degree angle to X axis
+    text(x = grconvertX(0.5, from = "npc"), # align to center of plot X axis
+           y = grconvertY(0.5, from = "npc"), # align to center of plot Y axis
+            labels = "Степан Сушко", # our watermark
+            cex = 3, font = 2, # large, bold font - hard to miss
+            col = adjustcolor("steelblue", alpha.f = 0.35), # translucent (0.2 = 20%) red color
+            srt = 45) # srt = angle of text: 45 degree angle to X axis
 
-dev.off()
+    dev.off()
+}
+
+
 
 
 
@@ -636,26 +646,32 @@ map <- GetMap(center = c( main_airport$lat, main_airport$lon), zoom = 3,
 
 df2 = unique(df[, c(9:11)])
 #df2 = rbind(df2, c(main_airport$lon, main_airport$lat, sum(df2$`Частота`)))
-df2 = df2[df2$lon!=0,] 
-
-
-
-png(filename = file.path(plotDir, paste("Bubble_plot_Cities ",sDate," ",airport_en,".png", sep="")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-
-par(mar = rep(.5, 4))
-par(cex = 3)
+df2 = df2[df2$lon != 0,]
 
 bubbleMap(
-      df2, coords = c("lon", "lat"), map, zcol = "Частота",
-      key.entries = c(2, 5, 8 , 50, 330),
-      colPalette = colorRampPalette(c("cyan4", "tomato"))( 5 ),
-      do.sqrt = T, alpha = 1.0, verbose = 0.95)#, legendLoc = "")
+          df2, coords = c("lon", "lat"), map, zcol = "Частота",
+          key.entries = c(2, 5, 8, 50, 330),
+          colPalette = colorRampPalette(c("cyan4", "tomato"))(5),
+          do.sqrt = T, alpha = 1.0, verbose = 0.95) #, legendLoc = "")
 
-text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
-        labels = "Степан Сушко\nдля\n       Ростов-Транспорт", cex = 2, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
 
-dev.off()
+if (PlotsOutput) {
+    png(filename = file.path(plotDir, paste("Bubble_plot_Cities ",sDate," ",airport_en,".png", sep="")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
 
+    par(mar = rep(.5, 4))
+    par(cex = 3)
+
+    bubbleMap(
+          df2, coords = c("lon", "lat"), map, zcol = "Частота",
+          key.entries = c(2, 5, 8 , 50, 330),
+          colPalette = colorRampPalette(c("cyan4", "tomato"))( 5 ),
+          do.sqrt = T, alpha = 1.0, verbose = 0.95)#, legendLoc = "")
+
+    text(x = grconvertX(0.5, from = "npc"), y = grconvertY(0.5, from = "npc"),
+            labels = "Степан Сушко\nдля\n       Ростов-Транспорт", cex = 2, font = 2, col = adjustcolor("steelblue", alpha.f = 0.35), srt = 45)
+
+    dev.off()
+}
 
 
 
@@ -667,23 +683,23 @@ dev.off()
 # http://www.wsdot.wa.gov/Aviation/planning/EconomicCalc/Documents/AirplaneCapacityTable
 df_capacity = data.frame(
     type = c(
-        "Airbus A319", "Airbus A320", "Airbus A321", "Airbus A321 SH", "Airbus A330-200", "Airbus A330-300",
+        "Airbus A319", "Airbus A320", "Airbus А321", "Airbus A321", "Airbus A321 SH", "Airbus A330-200", "Airbus A330-300",
         "Boeing 737-100", "Boeing 737-200", "Boeing 737-300", "Boeing 737-400", "Boeing 737-500", "Boeing 737-600", "Boeing 737-700", "Boeing 737-800", "Boeing 737-800W", "Boeing 737-900", "Boeing 737-900ER",
         "Boeing 757-200", "Boeing 757-300",
         "Boeing 767-200", "Boeing 767-200ER", "Boeing 767-300", "Boeing 767-300ER", "Boeing 767-400ER",
         "Boeing 777-200", "Boeing 777-200ER", "Boeing 777-200LR", "Boeing 777-300", "Boeing 777-300ER", "Boeing 777-8X", "Boeing 777-9X", "Boeing 747-400",
         "Canadair regional jet", "Bombardier CRJ200", 
-        "Embraer 170", "Embraer 175", "Embraer 190", "Embraer 195",
+        "Embraer 170", "Embraer 175", "Embraer EMB 175", "Embraer 190", "Embraer 195",
         "AT-72-5",
         "Сухой Суперджет 100", "ТУ-204", "ЯК-42", "АН-24" ),
     capacity = c(
-        134, 164, 199, 199, 293, 335,
+        134, 164, 199, 199, 199, 293, 335,
         103, 133, 149, 168, 132, 130, 148, 189, 189, 189, 215,
         214, 260,
         214, 214, 261, 261, 296,
         300, 300, 300, 365, 365, 365, 415, 416,
         76, 50,
-        76, 84, 106, 116,
+        76, 84, 106, 106, 116,
         74,
         95, 210, 120, 50))
 df_capacity$type = as.character(df_capacity$type)
@@ -706,9 +722,7 @@ colnames(df_tmp) = c("Var1", "Freq")
 p6 = Freq_plot(df_tmp, paste("Ёмкость рейсов из аэропорта", airport, "\nпо типам самолётов (в неделю)")) + annotate(geom = "text", x = 5, y = 5000, xend = Inf, yend = Inf, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial') + ylab(paste("Общая ёмкость по типам (в одном направлении в месяц):", sum(df_jets$`Ёмкость`) * 4))
 p6
 
-png(filename = file.path(plotDir, paste("Jet_vs_Capacity ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-p6
-dev.off()
+
 
 # Пассажиропоток
 sum(df_jets$`Ёмкость`) * 8 * 0.7
@@ -740,9 +754,7 @@ p7 = Freq_plot(df_city_capacity, paste("Ёмкость из аэропорта", airport, "\nпо на
     annotate(geom = "text", x = 15, y = 9000, xend = Inf, yend = Inf, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial') + ylab(paste("Общая ёмкость по типам (в одном направлении в месяц):", sum(df_jets$`Ёмкость`) * 4))
 p7
 
-png(filename = file.path(plotDir, paste("City_vs_Capacity ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-p7
-dev.off()
+
 
 
 
@@ -772,10 +784,20 @@ p8 = Freq_plot(df_airline_capacity, paste("Ёмкость из аэропорта", airport, "\nпо
     annotate(geom = "text", x = 9, y = 3000, xend = Inf, yend = Inf, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 10, alpha = 0.5, family = 'Arial') + ylab(paste("Общая ёмкость по типам (в одном направлении в месяц):", sum(df_jets$`Ёмкость`) * 4))
 p8
 
-png(filename = file.path(plotDir, paste("Airline_vs_Capacity ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
-p8
-dev.off()
 
+if (PlotsOutput) {
+    png(filename = file.path(plotDir, paste("Jet_vs_Capacity ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+    p6
+    dev.off()
 
+    png(filename = file.path(plotDir, paste("City_vs_Capacity ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+    p7
+    dev.off()
+
+    png(filename = file.path(plotDir, paste("Airline_vs_Capacity ", sDate, " ", airport_en, ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = NA, family = "", restoreConsole = TRUE, type = c("cairo-png"))
+    p8
+    dev.off()
+
+}
 
 
