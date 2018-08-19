@@ -5,49 +5,35 @@ if (!require("qdap")) { install.packages("qdap"); require("qdap") }
 if (!require("rvest")) { install.packages("rvest"); require("rvest") }
 if (!require("RJSONIO")) { install.packages("RJSONIO"); require("RJSONIO") }
 
-#if (!require("gridExtra")) { install.packages("gridExtra"); require("gridExtra") }
+if (!require("RCurl")) { install.packages("RCurl"); require("RCurl") }
+
 #if (!require("xlsx")) { install.packages("xlsx"); require("xlsx") }
 #if (!require("rJava")) { install.packages("rJava"); require("rJava") }
 
 #if (!require("mclust")) { install.packages("mclust"); require("mclust") }
 
-
-"9600213" # Sheremetievo
-"9866615" # Platov
-"9600365" # Borispol
-"9600396" # Simpferopol
-station = "9600396"
-airport = "Симферополь"
-airport_en = "Simpheropol"
-station = "9866615"
-airport = "Платов"
-airport_en = "Platov"
+library(gridExtra)
 
 PlotsOutput = T
 
-dataDir = "C:/Users/stepa/OneDrive/DataScience/Airports/ЯндексТаблоПарсер/Platov"
-plotDir = "C:/Users/stepa/OneDrive/DataScience/Airports"
+dataDir = "C:/Users/stepa/OneDrive/DataScience/Airports/Schedule/AirportsSchedule/Data"
+plotDir = "C:/Users/stepa/OneDrive/DataScience/Airports/Schedule/AirportsSchedule/Plots"
 
 #ddd = c(983245, 1230601, 1501318)
 #diff(ddd)[2] / diff(ddd)[1]
 
 
 # Parsing Airports of Regions ----
-u = "http://rov.aero/raspisanie_reysov"
-u = file.path(paste(dataDir, "/Data/", "/Platov_12.06.html", sep = ""))
+#u = "http://rov.aero/raspisanie_reysov"
+#u = file.path(paste(dataDir, "/Data/", "/Platov_12.06.html", sep = ""))
            
-u_Platov = "C:/Users/stepa/OneDrive/DataScience/Airports/ЯндексТаблоПарсер/Platov/Data/Platov_26.06.html"
-u_Samara = "C:/Users/stepa/OneDrive/DataScience/Airports/ЯндексТаблоПарсер/Platov/Data/Kuf_26.06.html"
-u_Ekb    = "C:/Users/stepa/OneDrive/DataScience/Airports/ЯндексТаблоПарсер/Platov/Data/SVX_26.06.html"
-u_NiNo   = "C:/Users/stepa/OneDrive/DataScience/Airports/ЯндексТаблоПарсер/Platov/Data/Goj_26.06.html"
-#if (!require("XML")) install.packages("XML")
+u_Platov = paste(dataDir, "/Platov_13.08.html", sep ="")
+u_Samara = paste(dataDir, "/Kuf_13.08.html", sep = "")
+u_Ekb    = paste(dataDir, "/SVX_13.08.html", sep = "")
+u_NiNo   = paste(dataDir, "/Goj_13.08.html", sep = "")
 
-if (!require("RCurl")) { install.packages("RCurl"); require("RCurl") }
 
-year = "2018"
-
-u = u_Platov
-
+u = u_Ekb
 AllDayRepeats = function(from1, to1, i) {
     df_dates = seq(from1, to1, by = "days")
     df_dates_2 = as.integer(format(seq(from1, to1, by = "days"), "%w"))
@@ -57,24 +43,23 @@ AllDayRepeats = function(from1, to1, i) {
 
 AR_schedule_parser = function(u, Geo, from2, to2) {
     tables = read_html(u, options = c("HUGE"))
+    tables2 = html_nodes(tables, "table")
 
     city = as.character(html_nodes(tables, "caption"))
     city = gsub("<caption>", "", city)
     city = gsub("</caption>", "", city)
 
-    j = 5 # 49
     li = html_table(tables, fill = T)
 
     df_tmp = data.frame(Рейс = NA, Самолёт = NA, Направление = NA, Расписание = "2000-01-01 00:00:00", stringsAsFactors = F)
     df_tmp[[4]] = as.POSIXlt(df_tmp[, 4], tz = "GMT")
 
 
-    j=2
+    j = 54
     for (j in c(2:(length(city)+1))) {
     #length(html_table(tables, fill = T)))) {
         df2 = html_table(tables, fill = T)[[j]]
 
-        tables2 = html_nodes(tables, "table")
         flight = as.character(html_nodes(tables2[j], "font"))
         flight = gsub("<font class=\"daflight\">","",flight)
         flight = gsub("</font>", "", flight)
@@ -90,9 +75,11 @@ AR_schedule_parser = function(u, Geo, from2, to2) {
             Расписание = substr(df2[, 3], 1, 5)
             )
 
-        tmp = gsub("период","", df2[,5])
+        tmp = gsub("период", "", df2[, 5])
+
         from = substr(tmp, 1, 5)
         to = substr(tmp, 7, 11)
+
         from1 = as.POSIXlt(paste(from, ".", year, sep = ""), format = "%d.%m.%Y")
         to1 = as.POSIXlt(paste(to, ".", year, sep = ""), format = "%d.%m.%Y")
 
@@ -104,7 +91,7 @@ AR_schedule_parser = function(u, Geo, from2, to2) {
         #Sys.timezone(location = TRUE)
 
 
-        #i = 3
+        #i = 9
         for (i in c(1:dim(df2)[1])) {
             if (length(grep("пн", gsub("дни прибытия рейсов", "", df2[i, 6]))) > 0) {
                 if (length(AllDayRepeats(from1[i], to1[i], 1)) > 0) {
@@ -267,23 +254,36 @@ AR_schedule_parser = function(u, Geo, from2, to2) {
     return(df)
 }
 
-FromDay = "2018-06-25 00:00:00"
-ToDay   = "2018-07-01 23:59:59"
+year    = "2018"
+FromDay = "2018-09-17 00:00:00"
+ToDay = "2018-09-23 23:59:59"
+
 df_Platov = AR_schedule_parser(u_Platov, F, FromDay, ToDay)
 df_Samara = AR_schedule_parser(u_Samara, F, FromDay, ToDay)
 df_Ekb    = AR_schedule_parser(u_Ekb,    F, FromDay, ToDay)
 df_NiNo   = AR_schedule_parser(u_NiNo,   F, FromDay, ToDay)
 
-write.csv2(df_Platov, file.path(dataDir, paste("TimeTable_Platov_", as.Date(Sys.Date()), " site", ".csv", sep = "")))
-write.csv2(df_Ekb, file.path(dataDir, paste("TimeTable_Ekb_", as.Date(Sys.Date()), " site", ".csv", sep = "")))
-write.csv2(df_Samara, file.path(dataDir, paste("TimeTable_Samara_", as.Date(Sys.Date()), " site", ".csv", sep = "")))
-write.csv2(df_NiNo, file.path(dataDir, paste("TimeTable_NiNo_", as.Date(Sys.Date()), " site", ".csv", sep = "")))
+#write.csv2(df_Platov, file.path(dataDir, paste("TimeTable_Platov_", as.Date(Sys.Date()), " site", ".csv", sep = "")))
+#write.csv2(df_Ekb, file.path(dataDir, paste("TimeTable_Ekb_", as.Date(Sys.Date()), " site", ".csv", sep = "")))
+#write.csv2(df_Samara, file.path(dataDir, paste("TimeTable_Samara_", as.Date(Sys.Date()), " site", ".csv", sep = "")))
+#write.csv2(df_NiNo, file.path(dataDir, paste("TimeTable_NiNo_", as.Date(Sys.Date()), " site", ".csv", sep = "")))
 
 
 
 
 
 # Parsing Yandex -----
+
+"9600213" # Sheremetievo
+"9866615" # Platov
+"9600365" # Borispol
+"9600396" # Simpferopol
+station = "9600396"
+airport = "Симферополь"
+airport_en = "Simpheropol"
+station = "9866615"
+airport = "Платов"
+airport_en = "Platov"
 
 #Sys.getlocale()
 #LANG = "ru_RU.65001"
@@ -421,7 +421,7 @@ write.csv2(df, file.path(dataDir, paste("TimeTable_", airport_en, "_", as.Date(S
 
 #df = read.csv2( file.path(dataDir, "TimeTable_2018-05-25.csv"))[,c(2:12)]
 
-df2 = df
+df_Platov = df
 
 
 
@@ -673,6 +673,7 @@ Analysis_Ekb    = Frequncies_Routes_Capacities( df_Ekb, "Екб", "Ekb", F )
 Analysis_Samara = Frequncies_Routes_Capacities( df_Samara, "Самара", "Samara", F )
 Analysis_NiNo   = Frequncies_Routes_Capacities( df_NiNo, "НиНо", "NiNo", F )
 
+#Analysis_Sim = Frequncies_Routes_Capacities(df_Sim, "Симф", "Simf", F)
 
 
 
@@ -803,31 +804,31 @@ if (PlotsOutput) {
     dev.off()
 
     # Frequencies by day and hour
-    png(filename = file.path(plotDir, paste("AR days freqs ", Sys.Date(), ".png", sep = "")), width = 1280, height = 1280, units = "px", pointsize = 12, bg = "white", res = 60, family = "", restoreConsole = TRUE, type = c("windows"))
+    png(filename = file.path(plotDir, paste("AR days freqs ", Sys.Date(), ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = 60, family = "", restoreConsole = TRUE, type = c("windows"))
         grid.arrange(
             Analysis_Ekb[[9]] + annotate(geom = "text", x = 3.5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
+            Analysis_NiNo[[9]] + annotate(geom = "text", x = 3.5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Rostov[[9]] + annotate(geom = "text", x = 3.5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Samara[[9]] + annotate(geom = "text", x = 3.5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
-            Analysis_NiNo[[9]] + annotate(geom = "text", x = 3.5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             ncol = 2)
     dev.off()
 
-    png(filename = file.path(plotDir, paste("AR hours freqs ", Sys.Date(), ".png", sep = "")), width = 1280, height = 1280, units = "px", pointsize = 12, bg = "white", res = 60, family = "", restoreConsole = TRUE, type = c("windows"))
+    png(filename = file.path(plotDir, paste("AR hours freqs ", Sys.Date(), ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = 60, family = "", restoreConsole = TRUE, type = c("windows"))
         grid.arrange(
             Analysis_Ekb[[10]] + annotate(geom = "text", x = 3.5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
+            Analysis_NiNo[[10]] + annotate(geom = "text", x = 3.5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Rostov[[10]] + annotate(geom = "text", x = 3.5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Samara[[10]] + annotate(geom = "text", x = 3.5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
-            Analysis_NiNo[[10]] + annotate(geom = "text", x = 3.5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             ncol = 2)
     dev.off()
 
     # Cities, airlines, jets frequencies
-    png(filename = file.path(plotDir, paste("AR cities freqs ", Sys.Date(), ".png", sep = "")), width = 1280, height = 1280, units = "px", pointsize = 12, bg = "white", res = 60, family = "", restoreConsole = TRUE, type = c("windows"))#,    compression = "lzw")
+    png(filename = file.path(plotDir, paste("AR cities freqs ", Sys.Date(), ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = 60, family = "", restoreConsole = TRUE, type = c("windows"))#,    compression = "lzw")
         grid.arrange(
             Analysis_Ekb[[6]] + annotate(geom = "text", x = 35, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
+            Analysis_NiNo[[6]] + annotate(geom = "text", x = 10, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Rostov[[6]] + annotate(geom = "text", x = 25, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Samara[[6]] + annotate(geom = "text", x = 25, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
-            Analysis_NiNo[[6]] + annotate(geom = "text", x = 10, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             ncol = 2)
     dev.off()
 
@@ -835,18 +836,18 @@ if (PlotsOutput) {
     png(filename = file.path(plotDir, paste("AR airlines freqs ", Sys.Date(), ".png", sep = "")), width = 1280, height = 1280, units = "px", pointsize = 12, bg = "white", res = 72, family = "", restoreConsole = TRUE, type = c("windows")) #,    compression = "lzw")
         grid.arrange(
             Analysis_Ekb[[7]] + annotate(geom = "text", x = 15, y = 75.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
+            Analysis_NiNo[[7]] + annotate(geom = "text", x = 10, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Rostov[[7]] + annotate(geom = "text", x = 15, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Samara[[7]] + annotate(geom = "text", x = 15, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
-            Analysis_NiNo[[7]] + annotate(geom = "text", x = 10, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             ncol = 2)
     dev.off()
 
-    png(filename = file.path(plotDir, paste("AR jets freqs ", Sys.Date(), ".png", sep = "")), width = 1280, height = 1280, units = "px", pointsize = 12, bg = "white", res = 72, family = "", restoreConsole = TRUE, type = c("windows")) #,    compression = "lzw")
+    png(filename = file.path(plotDir, paste("AR jets freqs ", Sys.Date(), ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = 72, family = "", restoreConsole = TRUE, type = c("windows")) #,    compression = "lzw")
         grid.arrange(
             Analysis_Ekb[[8]] + annotate(geom = "text", x = 10, y = 75.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
+            Analysis_NiNo[[8]] + annotate(geom = "text", x = 10, y = 15.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Rostov[[8]] + annotate(geom = "text", x = 5, y = 40.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Samara[[8]] + annotate(geom = "text", x = 10, y = 30.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
-            Analysis_NiNo[[8]] + annotate(geom = "text", x = 10, y = 15.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             ncol = 2)
     dev.off()
 
@@ -855,31 +856,31 @@ if (PlotsOutput) {
 
 
     # Cities, airlines, jets frequencies
-    png(filename = file.path(plotDir, paste("AR jets capacities ", Sys.Date(), ".png", sep = "")), width = 1280, height = 1280, units = "px", pointsize = 12, bg = "white", res = 72, family = "", restoreConsole = TRUE, type = c("windows")) #,    compression = "lzw")
+    png(filename = file.path(plotDir, paste("AR jets capacities ", Sys.Date(), ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = 72, family = "", restoreConsole = TRUE, type = c("windows")) #,    compression = "lzw")
     grid.arrange(
             Analysis_Ekb[[11]] + annotate(geom = "text", x = 15, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
+            Analysis_NiNo[[11]] + annotate(geom = "text", x = 10, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Rostov[[11]] + annotate(geom = "text", x = 5, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Samara[[11]] + annotate(geom = "text", x = 15, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
-            Analysis_NiNo[[11]] + annotate(geom = "text", x = 10, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             ncol = 2)
     dev.off()
 
 
-    png(filename = file.path(plotDir, paste("AR cities capacities ", Sys.Date(), ".png", sep = "")), width = 1280, height = 1280, units = "px", pointsize = 12, bg = "white", res = 72, family = "", restoreConsole = TRUE, type = c("windows")) #,    compression = "lzw")
+    png(filename = file.path(plotDir, paste("AR cities capacities ", Sys.Date(), ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = 72, family = "", restoreConsole = TRUE, type = c("windows")) #,    compression = "lzw")
     grid.arrange(
             Analysis_Ekb[[12]] + annotate(geom = "text", x = 15, y = 75.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
+            Analysis_NiNo[[12]] + annotate(geom = "text", x = 10, y = 15.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Rostov[[12]] + annotate(geom = "text", x = 15, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Samara[[12]] + annotate(geom = "text", x = 15, y = 25.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
-            Analysis_NiNo[[12]] + annotate(geom = "text", x = 10, y = 15.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             ncol = 2)
     dev.off()
 
-    png(filename = file.path(plotDir, paste("AR airlines capacities ", Sys.Date(), ".png", sep = "")), width = 1280, height = 1280, units = "px", pointsize = 12, bg = "white", res = 72, family = "", restoreConsole = TRUE, type = c("windows")) #,    compression = "lzw")
+    png(filename = file.path(plotDir, paste("AR airlines capacities ", Sys.Date(), ".png", sep = "")), width = 800, height = 800, units = "px", pointsize = 12, bg = "white", res = 72, family = "", restoreConsole = TRUE, type = c("windows")) #,    compression = "lzw")
     grid.arrange(
             Analysis_Ekb[[13]] + annotate(geom = "text", x = 10, y = 75.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
+            Analysis_NiNo[[13]] + annotate(geom = "text", x = 10, y = 15.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Rostov[[13]] + annotate(geom = "text", x = 5, y = 40.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             Analysis_Samara[[13]] + annotate(geom = "text", x = 10, y = 30.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
-            Analysis_NiNo[[13]] + annotate(geom = "text", x = 10, y = 15.0, label = 'Степан Сушко', color = 'white', angle = 45, fontface = 'bold', size = 22, alpha = 0.5),
             ncol = 2)
     dev.off()
 
@@ -1017,7 +1018,8 @@ map <- GetMap(center = c( main_airport$lat, main_airport$lon), zoom = 3,
        size = c(640, 640), destfile = file.path(tempdir(), "meuse.png"),
         maptype = "mobile", SCALE = 1);
 
-
+df = df_Platov
+airport_en = "Platov"
 
 df2 = unique(df[, c(9:11)])
 #df2 = rbind(df2, c(main_airport$lon, main_airport$lat, sum(df2$`Частота`)))
